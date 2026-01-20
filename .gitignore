@@ -1,0 +1,33 @@
+# Dependencies
+node_modules
+.pnpm-store
+venv
+__pycache__
+
+# Environment
+.env
+.env.local
+.DS_Store
+
+# Next.js
+.next
+out
+build
+
+# Python
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.venv
+.pytest_cache
+.mypy_cache
+
+# IDEs
+.vscode
+.idea
+*.swp
