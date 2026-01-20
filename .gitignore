@@ -31,3 +31,8 @@ pip-delete-this-directory.txt
 .vscode
 .idea
 *.swp
+
+# Local Reference Files (Not for Repo)
+final_asthma_dataset.csv
+AGENTS.md
+Ref.png
