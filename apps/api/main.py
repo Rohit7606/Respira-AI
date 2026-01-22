@@ -131,55 +131,50 @@ async def predict_risk(request: PredictionRequest):
     elif model is not None:
         # 4. ML Prediction (The "New Brain")
         try:
-            # Prepare input dataframe for model
-            # Must match training columns: Age, Gender, Ethnicity, Smoking, PollutionExposure, MosquitoCoil, PREFVC, PREFEV, Budesonide, Wheezing, BMI, ShortnessOfBreath, Nedocromil
+            # Prepare Strictly Validated Input for XGBoost
+            # Model expects: ['Age', 'Gender', 'BMI', 'Smoking', 'Wheezing']
             
-            # Map Categoricals
-            try:
-                gender_val = le_gender.transform([request.gender])[0]
-            except:
-                gender_val = 0 # Fallback
+            # Mappings (Hardcoded for reliability)
+            gender_map = {"Male": 0, "Female": 1} # Standard: 0=Male, 1=Female
+            gender_val = gender_map.get(request.gender, 0)
             
             smoking_map = {"Non-smoker": 0, "Ex-smoker": 1, "Current Smoker": 2}
             smoking_val = smoking_map.get(request.smoking, 0)
             
-            # BMI Calculation
+            # BMI Calculation (or default)
             bmi = 22.0
             if request.height and request.weight and request.height > 0:
-                # BMI = kg / m^2
                 height_m = request.height / 100
                 bmi = request.weight / (height_m * height_m)
             
+            # Create DataFrame with exact column order
             input_data = pd.DataFrame([{
                 'Age': request.age,
                 'Gender': gender_val,
-                'Ethnicity': 0, # Default (Missing in intake)
-                'Smoking': smoking_val,
-                'PollutionExposure': env_data.pm25, 
-                'MosquitoCoil': 0, # Default
-                'PREFVC': request.fev1 * 1.25, # Heuristic approximation
-                'PREFEV': request.fev1,
-                'Budesonide': 1 if request.medication_use else 0, # Meds Proxy
-                'Wheezing': 1 if request.wheezing else 0,
                 'BMI': bmi,
-                'ShortnessOfBreath': 1 if request.shortness_of_breath else 0,
-                'Nedocromil': 0 # Could map to meds too, but Budesonide covers it for binary check
+                'Smoking': smoking_val,
+                'Wheezing': 1 if request.wheezing else 0
             }])
             
-            # Predict Probability of Class 1 (Exacerbation/High Risk)
-            # XGBoost requires DMatrix or simple DF
-            prob = model.predict_proba(input_data)[0][1] # [prob_0, prob_1]
+            # Predict Probability
+            prob = model.predict_proba(input_data)[0][1]
             risk = float(prob)
             
-            # Uncertainty calculation (simple heuristic based on probability margin)
-            # If prob is 0.5, uncertainty is high. If 0.9 or 0.1, uncertainty low.
+            # --- ENVIRONMENTAL PENALTY ---
+            # If air quality is bad (PM2.5 > 50), slight risk boost.
+            if env_data.pm25 > 50:
+                print(f"Applying Environmental Penalty (PM2.5={env_data.pm25})")
+                risk = min(0.99, risk + 0.05)
+            
+            # Uncertainty
             uncertainty_range = 0.2 * (1 - abs(risk - 0.5) * 2) 
-            uncertainty_range = max(0.05, uncertainty_range) # Min uncertainty
+            uncertainty_range = max(0.05, uncertainty_range)
             
             trust_rating = "high" if uncertainty_range < 0.1 else "medium"
             if anomaly_result['is_outlier']:
                 trust_rating = "low"
             
+
         except Exception as e:
             import traceback
             traceback.print_exc() # Print full stack trace to console
