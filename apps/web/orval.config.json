@@ -1,0 +1,16 @@
+{
+    "respira-api": {
+        "input": "http://localhost:8000/openapi.json",
+        "output": {
+            "mode": "tags-split",
+            "target": "./lib/api/generated.ts",
+            "client": "react-query",
+            "override": {
+                "mutator": {
+                    "path": "./lib/api/axios.ts",
+                    "name": "customInstance"
+                }
+            }
+        }
+    }
+}
