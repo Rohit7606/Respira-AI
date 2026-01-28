@@ -5,9 +5,11 @@ import {
     Activity,
     Wind,
     ShieldAlert,
+    Search,
 } from "lucide-react"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { PatientIntakeForm } from "@/components/dashboard/PatientIntakeForm"
 import { RiskGaugeCard } from "@/components/dashboard/RiskGaugeCard"
 import { HistoryTrendChart } from "@/components/dashboard/HistoryTrendChart"
@@ -233,9 +235,24 @@ export default function DashboardPage() {
                                                 className="flex items-center justify-between border-b border-teal-100/50 pb-3 last:border-0 last:pb-0"
                                             >
                                                 <div className="space-y-1">
-                                                    <p className="text-base font-semibold leading-none text-teal-900">
-                                                        {record.patient_name || `Patient ${record.id.slice(0, 4)}`}
-                                                    </p>
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="text-base font-semibold leading-none text-teal-900">
+                                                            {record.patient_name || `Patient ${record.id.slice(0, 4)}`}
+                                                        </p>
+                                                        {(record as any).flagged_features && (record as any).flagged_features.length > 0 && (
+                                                            <div className="group relative">
+                                                                <ShieldAlert className="h-4 w-4 text-amber-500 cursor-help" />
+                                                                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-48 bg-amber-900/95 backdrop-blur-sm text-white text-xs p-2 rounded-lg shadow-xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all pointer-events-none z-50">
+                                                                    <p className="font-bold border-b border-white/20 pb-1 mb-1 text-[10px] uppercase">Anomaly Detected</p>
+                                                                    <ul className="list-disc pl-3 space-y-0.5">
+                                                                        {(record as any).flagged_features.map((f: string, i: number) => (
+                                                                            <li key={i}>{f}</li>
+                                                                        ))}
+                                                                    </ul>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                     <p className="text-sm text-muted-foreground mt-1">
                                                         <span className="font-medium">{record.age} years old</span>
                                                     </p>

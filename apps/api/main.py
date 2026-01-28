@@ -14,8 +14,9 @@ supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print(f"DEBUG: Supabase Client Initialized. URL: {SUPABASE_URL[:10]}...")
     except Exception as e:
-        print(f"Supabase init failed: {e}")
+        print(f"DEBUG: Supabase init failed: {e}")
 
 # Trigger reload for new model artifacts
 app = FastAPI()
@@ -28,7 +29,56 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from typing import List, Optional
+
+# --- Patient Identity API ---
+class PatientReference(BaseModel):
+    patient_id: str
+    patient_name: str
+    age: int
+    zip_code: str
+    gender: str
+    smoking: str
+    height: Optional[float] = None
+    weight: Optional[float] = None
+    last_visit: Optional[str] = None
+
+@app.get("/patients", response_model=List[PatientReference])
+async def search_patients(query: str = ""):
+    """Return unique patients for lookup."""
+    try:
+        # Fetch distinct patients via logical grouping
+        response = supabase.table("predictions") \
+            .select("patient_id, patient_name, age, zip_code, gender, smoking, height, weight, created_at") \
+            .order("created_at", desc=True) \
+            .execute()
+        
+        seen = set()
+        results = []
+        for r in response.data:
+            pid = r.get('patient_id')
+            if pid and pid not in seen:
+                seen.add(pid)
+                p_name = r.get('patient_name') or "Unknown"
+                if not query or query.lower() in p_name.lower():
+                    results.append({
+                        "patient_id": pid,
+                        "patient_name": p_name,
+                        "age": r.get('age') or 0,
+                        "zip_code": r.get('zip_code') or "00000",
+                        "gender": r.get('gender') or 'Male',
+                        "smoking": r.get('smoking') or 'Non-smoker',
+                        "height": r.get('height'),
+                        "weight": r.get('weight'),
+                        "last_visit": r['created_at']
+                    })
+        return results[:20]
+    except Exception as e:
+        print(f"Search error: {e}")
+        return []
+
 class PredictionRequest(BaseModel):
+    patient_id: Optional[str] = None # NEW: Link to existing patient
     patient_name: str = Field(..., min_length=1)
     age: int = Field(..., ge=0, le=120)
     fev1: float = Field(..., ge=0.5, le=8.0, description="Liters")
@@ -101,14 +151,17 @@ load_ml_artifacts()
 
 
 # API Endpoints
-@app.post("/predict", response_model=PredictionResponse)
-async def predict_risk(request: PredictionRequest):
+@app.post("/predict_debug", include_in_schema=False)
+async def predict_risk_impl(request: PredictionRequest):
     # 1. Fetch Environmental Context (Rule 2)
     env_data = await env_service.get_data(request.zip_code)
 
     # 2. Anomaly Detection (Rule 5)
     features = request.dict()
+    if "patient_id" in features: del features["patient_id"]
     anomaly_result = anomaly_detector.detect(features)
+    
+    bmi = 0.0 # Default initialization
     
     if anomaly_result['is_outlier']:
         telemetry_service.log_trust_event("ANOMALY_DETECTED", {
@@ -117,84 +170,106 @@ async def predict_risk(request: PredictionRequest):
              "reasons": anomaly_result['flagged_features']
         })
 
-    # 3. Hybrid Safety Layer (The "Old Brain" Guardrail)
-    # Critical Logic: If vital signs are critical, override any ML prediction.
-    if request.spo2 < 90 or request.pef < 200:
-        print("CRITICAL OVERRIDE: SpO2 < 90 or PEF < 200 detected. Forcing High Risk.")
-        risk = 0.99
-        trust_rating = "high" # High trust because this is a physiological certainty
-        uncertainty_range = 0.01
-        
-        # Log this critical event
-        telemetry_service.log_trust_event("CRITICAL_OVERRIDE", features)
-        
-    elif model is not None:
-        # 4. ML Prediction (The "New Brain")
-        try:
-            # Prepare Strictly Validated Input for XGBoost
-            # Model expects: ['Age', 'Gender', 'BMI', 'Smoking', 'Wheezing']
+# ... (imports)
+from services.clinical import clinical_service
+
+# ... (API Endpoints, predict_risk function)
+@app.post("/predict", response_model=PredictionResponse)
+async def predict_risk(request: PredictionRequest):
+    # 1. Fetch Environmental Context (Rule 2)
+    env_data = await env_service.get_data(request.zip_code)
+
+    # 2. Anomaly Detection (Rule 5)
+    features = request.dict()
+    if "patient_id" in features: del features["patient_id"]
+    anomaly_result = anomaly_detector.detect(features)
+    
+    # 3. Clinical Feature Engineering (The "Medical Brain")
+    # Calculate BMI
+    bmi = 22.0
+    if request.height and request.weight and request.height > 0:
+        bmi = clinical_service.calculate_bmi(request.weight, request.height)
             
-            # Mappings (Hardcoded for reliability)
-            gender_map = {"Male": 0, "Female": 1} # Standard: 0=Male, 1=Female
+    # Calculate Predicted Baselines
+    gender_str = request.gender # "Male" or "Female"
+    pred_fev1 = clinical_service.calculate_predicted_fev1(request.age, request.height, gender_str)
+    pred_pef = clinical_service.calculate_predicted_pef(request.age, request.height, gender_str)
+    
+    # Calculate Percent Predicted (The "True" Health Metric)
+    fev1_pct = round((request.fev1 / pred_fev1) * 100, 1)
+    pef_pct = round((request.pef / pred_pef) * 100, 1)
+    
+    print(f"DEBUG: Clinical Context -> FEV1%={fev1_pct}%, PEF%={pef_pct}%")
+
+    if anomaly_result['is_outlier']:
+        telemetry_service.log_trust_event("ANOMALY_DETECTED", {
+             "inputs": features,
+             "score": anomaly_result['anomaly_score'],
+             "reasons": anomaly_result['flagged_features']
+        })
+
+    # 4. ML Prediction (TRUST THE MODEL)
+    risk = 0.5
+    trust_rating = "medium"
+    uncertainty_range = 0.2
+    
+    if model is not None:
+        try:
+            # Mappings
+            gender_map = {"Male": 0, "Female": 1}
             gender_val = gender_map.get(request.gender, 0)
             
             smoking_map = {"Non-smoker": 0, "Ex-smoker": 1, "Current Smoker": 2}
             smoking_val = smoking_map.get(request.smoking, 0)
             
-            # BMI Calculation (or default)
-            bmi = 22.0
-            if request.height and request.weight and request.height > 0:
-                height_m = request.height / 100
-                bmi = request.weight / (height_m * height_m)
-            
-            # Create DataFrame with exact column order
+            # New Model features: 
+            # ['Age', 'Gender', 'BMI', 'Smoking', 'Wheezing', 'FEV1', 'PEF', 'FEV1_Pct', 'PEF_Pct', 'SpO2', 'Pollution']
+            # Note: We now include BOTH raw and percent for maximum context
             input_data = pd.DataFrame([{
                 'Age': request.age,
                 'Gender': gender_val,
                 'BMI': bmi,
                 'Smoking': smoking_val,
-                'Wheezing': 1 if request.wheezing else 0
+                'Wheezing': 1 if request.wheezing else 0,
+                'FEV1': request.fev1,
+                'PEF': request.pef,
+                'FEV1_Pct': fev1_pct, # NEW
+                'PEF_Pct': pef_pct,   # NEW
+                'SpO2': request.spo2,
+                'Pollution': env_data.pm25
             }])
             
-            # Predict Probability
+            # Predict Probability (The "Oracle")
+            # The model is now trained to output ~0.99 for SpO2<90 or FEV1%<30
+            # So we DO NOT need a manual override.
             prob = model.predict_proba(input_data)[0][1]
             risk = float(prob)
             
-            # --- ENVIRONMENTAL PENALTY ---
-            # If air quality is bad (PM2.5 > 50), slight risk boost.
-            if env_data.pm25 > 50:
-                print(f"Applying Environmental Penalty (PM2.5={env_data.pm25})")
-                risk = min(0.99, risk + 0.05)
-            
-            # Uncertainty
+            # Trust is high if model is confident (very low or very high risk)
             uncertainty_range = 0.2 * (1 - abs(risk - 0.5) * 2) 
-            uncertainty_range = max(0.05, uncertainty_range)
+            trust_rating = "high" if uncertainty_range < 0.05 else "medium"
             
-            trust_rating = "high" if uncertainty_range < 0.1 else "medium"
-            if anomaly_result['is_outlier']:
-                trust_rating = "low"
-            
-
         except Exception as e:
             import traceback
-            traceback.print_exc() # Print full stack trace to console
-            print(f"ML Inference Error: {e}. Falling back to heuristics.")
-            risk = 0.5 # Fallback
-            uncertainty_range = 0.5
+            traceback.print_exc()
+            print(f"ML Inference Error: {e}. Falling back to default.")
+            risk = 0.5
             trust_rating = "low"
     else:
-        # Fallback if model load failed
-        print("Model not loaded. Using fallback.")
-        risk = 0.1 # Default low
-        trust_rating = "low"
-        uncertainty_range = 0.5
-
+        print("Model not loaded.")
+        
     # Clamp risk
     risk = max(0.01, min(0.99, risk))
 
-    # PERSISTENCE: Save to Supabase
+    # PERSISTENCE: Save to Supabase (unchanged logic)
     try:
+        final_patient_id = request.patient_id
+        if not final_patient_id:
+            import uuid
+            final_patient_id = str(uuid.uuid4())
+
         data = {
+            "patient_id": final_patient_id, # Link to identity
             "patient_name": request.patient_name,
             "age": request.age,
             "fev1": request.fev1,
@@ -209,7 +284,10 @@ async def predict_risk(request: PredictionRequest):
             "wheezing": request.wheezing,
             "shortness_of_breath": request.shortness_of_breath,
             "bmi": bmi, # Calculated value
-            "medication_use": request.medication_use
+            "height": request.height,
+            "weight": request.weight,
+            "medication_use": request.medication_use,
+            "flagged_features": anomaly_result['flagged_features'] if anomaly_result['is_outlier'] else []
         }
         supabase.table("predictions").insert(data).execute()
     except Exception as e:
@@ -230,6 +308,17 @@ async def predict_risk(request: PredictionRequest):
         "anomaly_detection": anomaly_result
     }
 
+
+@app.post("/predict", response_model=PredictionResponse)
+async def predict_risk(request: PredictionRequest):
+    try:
+        return await predict_risk_impl(request)
+    except Exception as e:
+        import traceback
+        error_msg = f"CRITICAL API ERROR: {str(e)}\n{traceback.format_exc()}"
+        print(error_msg)
+        from fastapi.responses import JSONResponse
+        return JSONResponse(status_code=500, content={"detail": error_msg})
 
 # ... (existing imports)
 from services.explainer import explainer_service
@@ -265,31 +354,44 @@ def get_history():
 @app.get("/stats")
 def get_stats():
     try:
-        # Fetch all predictions (just necessary columns) to calculate stats
-        response = supabase.table("predictions").select("risk_score,fev1").execute()
-        rows = response.data 
+        # 1. Efficient Total Count
+        total_res = supabase.table("predictions").select("*", count="exact", head=True).execute()
+        total_patients = total_res.count or 0
         
-        total_patients = len(rows)
         if total_patients == 0:
             return {
                 "total_patients": 0,
                 "high_risk_count": 0,
                 "avg_fev1": 0.0
             }
-            
-        high_risk = len([r for r in rows if r['risk_score'] > 0.7])
-        avg_fev1 = sum([r['fev1'] for r in rows]) / total_patients
+
+        # 2. Efficient High Risk Count (Risk > 0.7)
+        risk_res = supabase.table("predictions").select("*", count="exact", head=True).gt("risk_score", 0.7).execute()
+        high_risk_count = risk_res.count or 0
+        
+        # 3. Avg FEV1 (Approximation using recent data to stay fast)
+        # Fetching strictly the 'fev1' column for the last 1000 records to ensure responsiveness
+        fev_res = supabase.table("predictions").select("fev1").order("created_at", desc=True).limit(1000).execute()
+        fev_rows = fev_res.data
+        
+        avg_fev1 = 0.0
+        if fev_rows:
+            avg_fev1 = sum([r['fev1'] for r in fev_rows]) / len(fev_rows)
         
         return {
             "total_patients": total_patients,
-            "high_risk_count": high_risk,
-            "avg_fev1": avg_fev1
+            "high_risk_count": high_risk_count,
+            "avg_fev1": round(avg_fev1, 2)
         }
     except Exception as e:
         print(f"Error fetching stats: {e}")
+        # Return zeros on error to avoid crashing the dashboard
         return {
             "total_patients": 0,
             "high_risk_count": 0,
             "avg_fev1": 0.0
         }
 
+# Trigger Reload
+# Trigger Reload 2
+# Trigger Reload 3

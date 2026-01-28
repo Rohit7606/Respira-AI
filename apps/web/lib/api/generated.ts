@@ -56,6 +56,22 @@ export type PredictionRequest = {
      * @pattern ^\d{6}$
      */
     zip_code: string;
+    /** Gender */
+    gender: string;
+    /** Smoking Status */
+    smoking: string;
+    /** Height (cm) */
+    height?: number;
+    /** Weight (kg) */
+    weight?: number;
+    /** Wheezing */
+    wheezing: boolean;
+    /** Shortness of Breath */
+    shortness_of_breath: boolean;
+    /** Medication Use */
+    medication_use: boolean;
+    /** Patient ID */
+    patient_id?: string;
 };
 
 export type PredictionInterval = {

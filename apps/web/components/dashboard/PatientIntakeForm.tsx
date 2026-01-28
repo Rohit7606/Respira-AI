@@ -63,6 +63,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
     const form = useForm<PatientIntakeValues>({
         resolver: zodResolver(patientIntakeSchema) as any, // Temporary bypass for strict type check
         defaultValues: {
+            patient_id: undefined,
             age: age ?? undefined,
             patient_name: name ?? "", // Added patient_name to default values
             fev1: fev1 ?? undefined,
@@ -161,13 +162,86 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
         toast.info("Form cleared")
     }
 
+    const [isReturning, setIsReturning] = useState(false)
+    const [searchTerm, setSearchTerm] = useState("")
+    const [searchResults, setSearchResults] = useState<any[]>([])
+    const [isSearching, setIsSearching] = useState(false)
+
+    // Debounced search for patients
+    useEffect(() => {
+        if (!searchTerm || !isReturning) {
+            setSearchResults([])
+            return
+        }
+
+        const timeout = setTimeout(async () => {
+            setIsSearching(true)
+            try {
+                // In a real app config, use the proper API URL. 
+                // Assuming proxy or localhost for now based on context.
+                const res = await fetch(`http://localhost:8000/patients?query=${encodeURIComponent(searchTerm)}`)
+                if (res.ok) {
+                    const data = await res.json()
+                    setSearchResults(data)
+                }
+            } catch (error) {
+                console.error("Search failed", error)
+            } finally {
+                setIsSearching(false)
+            }
+        }, 300)
+        return () => clearTimeout(timeout)
+    }, [searchTerm, isReturning])
+
+    const selectPatient = (patient: any) => {
+        form.setValue("patient_name", patient.patient_name)
+        form.setValue("patient_id", patient.patient_id)
+        form.setValue("age", patient.age)
+        form.setValue("zip_code", patient.zip_code)
+
+        // Auto-load other fields
+        if (patient.gender) form.setValue("gender", patient.gender)
+        // if (patient.smoking) form.setValue("smoking", patient.smoking) // User requested to disable this
+        if (patient.height) form.setValue("height", patient.height)
+        if (patient.weight) form.setValue("weight", patient.weight)
+
+        // Update URL state too
+        setName(patient.patient_name)
+        setAge(patient.age)
+        setZip(patient.zip_code)
+
+        setSearchResults([])
+        setSearchTerm("")
+        toast.success("Patient details loaded")
+    }
+
     return (
         <Card className="w-full border-teal-200 shadow-md">
-            <CardHeader>
-                <CardTitle className="text-xl md:text-2xl text-teal-900">New Patient Intake</CardTitle>
-                <CardDescription className="text-teal-700/80">
-                    Enter the patient's clinical vitals to generate a risk assessment.
-                </CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                <div className="space-y-1">
+                    <CardTitle className="text-xl md:text-2xl text-teal-900">Patient Intake</CardTitle>
+                    <CardDescription className="text-teal-700/80">
+                        {isReturning ? "Search existing patient record." : "Enter new patient details."}
+                    </CardDescription>
+                </div>
+                <div className="flex items-center space-x-2 bg-teal-50 p-1 rounded-lg border border-teal-100">
+                    <Button
+                        variant={!isReturning ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => { setIsReturning(false); form.setValue("patient_id", undefined); }}
+                        className={cn(!isReturning && "bg-white text-teal-900 shadow-sm")}
+                    >
+                        New
+                    </Button>
+                    <Button
+                        variant={isReturning ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => setIsReturning(true)}
+                        className={cn(isReturning && "bg-white text-teal-900 shadow-sm")}
+                    >
+                        Returning
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent>
                 <Form {...form}>
@@ -176,6 +250,40 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                         onKeyDown={handleKeyDown}
                         className="space-y-6"
                     >
+                        {isReturning && (
+                            <div className="relative mb-6 animate-in slide-in-from-top-2">
+                                <FormLabel className="text-base text-teal-900">Search Patient</FormLabel>
+                                <Input
+                                    placeholder="Type name to search..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="mt-1.5 border-teal-200 focus-visible:ring-teal-500"
+                                />
+                                {isSearching && <Loader2 className="absolute right-3 top-9 h-4 w-4 animate-spin text-teal-500" />}
+
+                                {searchResults.length > 0 && (
+                                    <div className="absolute z-50 w-full mt-1 bg-white border border-teal-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                                        {searchResults.map(p => (
+                                            <div
+                                                key={p.patient_id}
+                                                className="p-3 hover:bg-teal-50 cursor-pointer border-b border-teal-50 last:border-0 flex justify-between items-center"
+                                                onClick={() => selectPatient(p)}
+                                            >
+                                                <div>
+                                                    <p className="font-medium text-teal-900">{p.patient_name}</p>
+                                                    <p className="text-xs text-muted-foreground">ID: {p.patient_id.slice(0, 8)}...</p>
+                                                </div>
+                                                <div className="text-right text-xs text-muted-foreground">
+                                                    <p>Age: {p.age}</p>
+                                                    <p>{p.zip_code}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <FormField
                                 control={form.control}

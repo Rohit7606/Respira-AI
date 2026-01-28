@@ -66,12 +66,42 @@ class AnomalyDetector:
         
         flagged = []
         if is_outlier:
-            # Heuristic explanation for why it's an outlier (Logic for UI)
-            if data['age'] > 90 or data['age'] < 5: flagged.append("Unusual Age")
-            if data['fev1'] > 6.0 or data['fev1'] < 0.8: flagged.append("Extreme FEV1")
-            if data['pef'] > 700 or data['pef'] < 100: flagged.append("Extreme PEF")
-            if data['spo2'] < 85: flagged.append("Critical SpO2")
-            if not flagged: flagged.append("Unusual Combination")
+            # Enhanced Explanation Logic using Z-scores (Deviation from mean)
+            # Means/SDs from our synthetic data generation
+            stats = {
+                'age': {'mean': 47.5, 'sd': 24.5}, # (5+90)/2 approx
+                'fev1': {'mean': 3.5, 'sd': 1.2},
+                'pef': {'mean': 400, 'sd': 150},
+                'spo2': {'mean': 96, 'sd': 3}
+            }
+            
+            # Calculate Z-scores
+            z_age = (data['age'] - stats['age']['mean']) / stats['age']['sd']
+            z_fev1 = (data['fev1'] - stats['fev1']['mean']) / stats['fev1']['sd']
+            z_pef = (data['pef'] - stats['pef']['mean']) / stats['pef']['sd']
+            z_spo2 = (data['spo2'] - stats['spo2']['mean']) / stats['spo2']['sd']
+
+            # Threshold for "Contributing Factor" (e.g., > 2 standard deviations)
+            threshold = 1.96
+
+            if abs(z_age) > threshold:
+                direction = "Advanced" if z_age > 0 else "Unusually Young"
+                flagged.append(f"{direction} Age ({data['age']})")
+            
+            if abs(z_fev1) > threshold:
+                direction = "High" if z_fev1 > 0 else "Extremely Low"
+                flagged.append(f"{direction} FEV1 ({data['fev1']}L)")
+
+            if abs(z_pef) > threshold:
+                direction = "High" if z_pef > 0 else "Extremely Low"
+                flagged.append(f"{direction} PEF ({data['pef']}L/min)")
+
+            if z_spo2 < -threshold: # We only care about low SpO2
+                flagged.append(f"Critical SpO2 ({data['spo2']}%)")
+
+            # Fallback for complex multivariate outliers that don't trigger single-var thresholds
+            if not flagged:
+                flagged.append("Complex Multivariate Anomaly")
 
         return {
             "is_outlier": is_outlier,

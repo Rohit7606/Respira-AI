@@ -34,9 +34,10 @@ def train_model():
     print(f"Scale Pos Weight used: {scale_weight:.4f}")
 
     print("\n--- Training Model ---")
+    # Features will now be: Age, Gender, BMI, Smoking, Wheezing, FEV1_Pct, PEF_Pct, SpO2, Pollution
     model = xgb.XGBClassifier(
         n_estimators=500,
-        max_depth=6, # Reduced slightly to prevent overfitting on synthetic data
+        max_depth=5, 
         learning_rate=0.05,
         objective='binary:logistic',
         eval_metric='logloss',

@@ -33,23 +33,39 @@ export function EnvironmentalContextCard({ data, isLoading }: Props) {
 
     if (!data) return null
 
-    // AQI Helper (OWM Scale: 1-5)
+    // Calculate Real AQI from PM2.5 (Standard US EPA Algo) through linear interpolation
+    const calculateRealAQI = (pm25: number) => {
+        const c = Math.round(pm25 * 10) / 10
+        if (c < 0) return 0
+        if (c <= 12.0) return Math.round(((50 - 0) / (12.0 - 0)) * (c - 0) + 0)
+        if (c <= 35.4) return Math.round(((100 - 51) / (35.4 - 12.1)) * (c - 12.1) + 51)
+        if (c <= 55.4) return Math.round(((150 - 101) / (55.4 - 35.5)) * (c - 35.5) + 101)
+        if (c <= 150.4) return Math.round(((200 - 151) / (150.4 - 55.5)) * (c - 55.5) + 151)
+        if (c <= 250.4) return Math.round(((300 - 201) / (250.4 - 150.5)) * (c - 150.5) + 201)
+        if (c <= 350.4) return Math.round(((400 - 301) / (350.4 - 250.5)) * (c - 250.5) + 301)
+        if (c <= 500.4) return Math.round(((500 - 401) / (500.4 - 350.5)) * (c - 350.5) + 401)
+        return 500
+    }
+
+    const realAQI = calculateRealAQI(data.pm25)
+
+    // Updated colors based on Real AQI (0-500 scale)
     const getAQIColor = (aqi: number) => {
-        if (aqi <= 1) return "bg-emerald-500" // Good
-        if (aqi === 2) return "bg-green-500"  // Fair
-        if (aqi === 3) return "bg-yellow-500" // Moderate
-        if (aqi === 4) return "bg-orange-500" // Poor
-        if (aqi >= 5) return "bg-red-500"     // Very Poor
-        return "bg-slate-500"
+        if (aqi <= 50) return "bg-emerald-500 ring-emerald-200"
+        if (aqi <= 100) return "bg-yellow-500 ring-yellow-200"
+        if (aqi <= 150) return "bg-orange-500 ring-orange-200"
+        if (aqi <= 200) return "bg-red-500 ring-red-200"
+        if (aqi <= 300) return "bg-purple-500 ring-purple-200"
+        return "bg-rose-900 ring-rose-200"
     }
 
     const getAQILabel = (aqi: number) => {
-        if (aqi <= 1) return "Good"
-        if (aqi === 2) return "Fair"
-        if (aqi === 3) return "Moderate"
-        if (aqi === 4) return "Poor"
-        if (aqi >= 5) return "Very Poor"
-        return "Unknown"
+        if (aqi <= 50) return "Good"
+        if (aqi <= 100) return "Moderate"
+        if (aqi <= 150) return "Unhealthy (Sens.)"
+        if (aqi <= 200) return "Unhealthy"
+        if (aqi <= 300) return "Very Unhealthy"
+        return "Hazardous"
     }
 
     return (
@@ -69,17 +85,12 @@ export function EnvironmentalContextCard({ data, isLoading }: Props) {
             </CardHeader>
             <CardContent>
                 <div className="flex items-center gap-4 mb-4">
-                    <div className={cn("h-16 w-16 rounded-full flex items-center justify-center text-white font-bold text-xl ring-4 ring-offset-2", getAQIColor(data.aqi))}>
-                        {/* Map 1-5 index to a representative AQI value for clearer UX */}
-                        {data.aqi === 1 ? "25" :
-                            data.aqi === 2 ? "75" :
-                                data.aqi === 3 ? "125" :
-                                    data.aqi === 4 ? "175" :
-                                        "250+"}
+                    <div className={cn("h-16 w-16 rounded-full flex items-center justify-center text-white font-bold text-xl ring-4 ring-offset-2 transition-all", getAQIColor(realAQI))}>
+                        {realAQI}
                     </div>
                     <div>
-                        <div className="text-2xl font-bold">{getAQILabel(data.aqi)}</div>
-                        <div className="text-sm text-muted-foreground">AQI Level (Est.)</div>
+                        <div className="text-2xl font-bold">{getAQILabel(realAQI)}</div>
+                        <div className="text-sm text-muted-foreground">AQI Level (Real-time)</div>
                     </div>
                 </div>
 

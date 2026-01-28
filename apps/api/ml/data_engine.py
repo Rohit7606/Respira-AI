@@ -26,7 +26,8 @@ def load_and_prep_data():
     target_col = 'Diagnosis'
     
     # Ensure numeric types
-    numeric_cols = ['Age', 'BMI', 'Gender', 'Smoking', 'Wheezing', 'Diagnosis']
+    # Ensure numeric types
+    numeric_cols = ['Age', 'BMI', 'Gender', 'Smoking', 'Wheezing', 'FEV1', 'PEF', 'FEV1_Pct', 'PEF_Pct', 'SpO2', 'Pollution', 'Diagnosis']
     for col in numeric_cols:
         df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
 

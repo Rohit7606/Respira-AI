@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 export const patientIntakeSchema = z.object({
+    patient_id: z.string().optional(),
     patient_name: z.string().min(1, "Patient name is required"),
     age: z.preprocess(
         (val) => (val === "" ? undefined : Number(val)),
