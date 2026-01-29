@@ -62,14 +62,14 @@ export function RiskGaugeCard({
     const barWidth = `${upperPct - lowerPct}%`
 
     return (
-        <Card className={cn("w-full transition-all duration-500 border-teal-200 shadow-md", isLowTrust && "bg-teal-50/30")}>
-            <CardHeader className="text-center pb-2 pt-4">
-                <CardTitle>Risk Assessment</CardTitle>
-                <CardDescription>
+        <Card variant="glass" className={cn("w-full transition-all duration-500 border-teal-200/50 shadow-md backdrop-blur-xl", isLowTrust ? "bg-teal-50/40" : "bg-white/40")}>
+            <CardHeader className="text-center pb-2 pt-4 border-b border-teal-100/30">
+                <CardTitle className="text-teal-900">Risk Assessment</CardTitle>
+                <CardDescription className="text-teal-800/60">
                     AI-generated risk score with confidence interval.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="flex flex-col items-center justify-center pb-2">
+            <CardContent className="flex flex-col items-center justify-center pb-2 pt-4">
                 <div className="relative w-72 h-72">
                     <ResponsiveContainer width="100%" height="100%">
                         <RadialBarChart
@@ -97,22 +97,22 @@ export function RiskGaugeCard({
                         </RadialBarChart>
                     </ResponsiveContainer>
                     <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-4xl font-bold" style={{ color: riskColor }}>{percentage}%</span>
-                        <span className="text-sm text-muted-foreground uppercase">{trustRating} Confidence</span>
+                        <span className="text-4xl font-black tracking-tighter" style={{ color: riskColor }}>{percentage}%</span>
+                        <span className="text-sm text-muted-foreground uppercase font-semibold tracking-wide">{trustRating} Confidence</span>
                     </div>
                 </div>
 
                 {/* Confidence Interval Visualization */}
                 <div className="w-full px-8 mt-4">
-                    <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                    <div className="flex justify-between text-xs text-muted-foreground mb-1 font-medium">
                         <span>0%</span>
-                        <span className="font-medium text-teal-900">Confidence Interval</span>
+                        <span className="font-bold text-teal-900">Confidence Interval</span>
                         <span>100%</span>
                     </div>
-                    <div className="relative h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div className="relative h-2 w-full bg-slate-200/50 rounded-full overflow-hidden">
                         {/* The Interval Bar */}
                         <div
-                            className="absolute h-full bg-teal-500/50 rounded-full transition-all duration-500"
+                            className="absolute h-full bg-teal-500/50 rounded-full transition-all duration-500 backdrop-blur-sm"
                             style={{
                                 left: barLeft,
                                 width: barWidth
@@ -120,7 +120,7 @@ export function RiskGaugeCard({
                         />
                         {/* The Risk Point */}
                         <div
-                            className="absolute h-full w-1 bg-teal-700 z-10"
+                            className="absolute h-full w-1 bg-teal-700 z-10 box-shadow-sm"
                             style={{ left: `${percentage}%` }}
                         />
                     </div>

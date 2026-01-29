@@ -25,65 +25,79 @@ export function Sidebar({ className }: React.HTMLAttributes<HTMLDivElement>) {
 
     const routes = [
         {
-            label: "Dashboard",
+            label: "Clinical Dashboard",
             icon: Activity,
             href: "/dashboard",
-            color: "text-sky-500",
         },
         {
-            label: "History",
+            label: "Patient History",
             icon: Wind,
             href: "/history",
-            color: "text-violet-500",
         },
         {
-            label: "Anomalies",
+            label: "Anomaly Detection",
             icon: ShieldAlert,
             href: "/anomalies",
-            color: "text-pink-700",
         },
     ]
 
     return (
-        <div className={cn("relative pb-12 min-h-screen border-r border-teal-800 bg-teal-800", className)}>
-            <div className="space-y-4">
-                <div className="px-3">
-                    <div className="flex h-14 items-center px-4 lg:h-[60px]">
-                        <h2 className="text-2xl font-bold tracking-tight text-white">
-                            Respira AI
-                        </h2>
+        <div className={cn("sticky top-0 flex flex-col h-screen bg-teal-900 border-r border-teal-800 text-teal-100", className)}>
+            {/* Brand Section */}
+            <div className="flex h-20 items-center px-6 lg:h-[80px] border-b border-teal-800">
+                <div className="flex items-center gap-3">
+                    <div className="h-8 w-8 rounded-lg bg-teal-500 flex items-center justify-center text-teal-950">
+                        <Wind className="h-5 w-5" />
                     </div>
-                    <div className="space-y-1">
-                        {routes.map((route) => (
+                    <h2 className="text-xl font-bold tracking-tight text-white font-display">
+                        Respira AI
+                    </h2>
+                </div>
+            </div>
+
+            {/* Navigation */}
+            <div className="flex-1 flex flex-col gap-2 p-4">
+                <div className="space-y-1">
+                    {routes.map((route) => {
+                        const isActive = pathname === route.href
+                        return (
                             <Button
                                 key={route.href}
-                                variant={pathname === route.href ? "secondary" : "ghost"}
+                                variant="ghost"
                                 className={cn(
-                                    "w-full justify-start text-base h-12 mb-1 text-teal-100 hover:text-white hover:bg-teal-700",
-                                    pathname === route.href && "bg-teal-900 text-white hover:bg-teal-900"
+                                    "w-full justify-start text-sm font-medium h-11 px-4 rounded-lg transition-colors",
+                                    isActive
+                                        ? "bg-teal-800 text-white shadow-sm"
+                                        : "text-teal-300 hover:bg-teal-800/50 hover:text-white"
                                 )}
                                 asChild
                             >
-                                <Link href={route.href}>
-                                    <route.icon className={cn("mr-3 h-5 w-5", "text-teal-200")} />
+                                <Link href={route.href} className="flex items-center">
+                                    <route.icon className={cn(
+                                        "mr-3 h-5 w-5",
+                                        isActive ? "text-teal-400" : "text-teal-400/70 group-hover:text-teal-400"
+                                    )} />
                                     {route.label}
                                 </Link>
                             </Button>
-                        ))}
-                    </div>
+                        )
+                    })}
                 </div>
             </div>
-            <div className="absolute bottom-4 left-0 w-full px-3">
-                <div className="border-t border-teal-700/50 pt-4 mb-2">
-                    <Button
-                        variant="ghost"
-                        className="w-full justify-start text-teal-100/80 hover:text-white hover:bg-teal-700/50 transition-all duration-200"
-                        onClick={handleSignOut}
-                    >
-                        <LogOut className="mr-3 h-5 w-5 text-teal-300" />
-                        Sign Out
-                    </Button>
+
+            {/* User / Footer */}
+            <div className="p-4 border-t border-teal-800">
+                <div className="flex items-center justify-between px-2 mb-4">
+                    <h3 className="text-xs font-semibold text-teal-400 uppercase tracking-wider">Account</h3>
                 </div>
+                <Button
+                    variant="ghost"
+                    className="w-full justify-start text-teal-300 hover:text-white hover:bg-teal-800 transition-colors h-10 px-4 rounded-lg"
+                    onClick={handleSignOut}
+                >
+                    <LogOut className="mr-3 h-4 w-4" />
+                    Sign Out
+                </Button>
             </div>
         </div >
     )

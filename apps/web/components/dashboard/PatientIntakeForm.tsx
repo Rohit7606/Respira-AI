@@ -216,20 +216,20 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
     }
 
     return (
-        <Card className="w-full border-teal-200 shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <Card variant="glass" className="w-full border-teal-200/50 shadow-xl backdrop-blur-xl bg-white/40">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-teal-100/30">
                 <div className="space-y-1">
                     <CardTitle className="text-xl md:text-2xl text-teal-900">Patient Intake</CardTitle>
-                    <CardDescription className="text-teal-700/80">
+                    <CardDescription className="text-teal-800/70 font-medium">
                         {isReturning ? "Search existing patient record." : "Enter new patient details."}
                     </CardDescription>
                 </div>
-                <div className="flex items-center space-x-2 bg-teal-50 p-1 rounded-lg border border-teal-100">
+                <div className="flex items-center space-x-2 bg-white/30 p-1 rounded-lg border border-teal-100/50 backdrop-blur-md">
                     <Button
                         variant={!isReturning ? "secondary" : "ghost"}
                         size="sm"
                         onClick={() => { setIsReturning(false); form.setValue("patient_id", undefined); }}
-                        className={cn(!isReturning && "bg-white text-teal-900 shadow-sm")}
+                        className={cn("transition-all duration-300", !isReturning ? "bg-teal-600 text-white shadow-md hover:bg-teal-700" : "text-teal-600 hover:text-teal-800 hover:bg-teal-50/80")}
                     >
                         New
                     </Button>
@@ -237,13 +237,13 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                         variant={isReturning ? "secondary" : "ghost"}
                         size="sm"
                         onClick={() => setIsReturning(true)}
-                        className={cn(isReturning && "bg-white text-teal-900 shadow-sm")}
+                        className={cn("transition-all duration-300", isReturning ? "bg-teal-600 text-white shadow-md hover:bg-teal-700" : "text-teal-600 hover:text-teal-800 hover:bg-teal-50/80")}
                     >
                         Returning
                     </Button>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(onSubmit, onInvalid)}
@@ -252,21 +252,21 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                     >
                         {isReturning && (
                             <div className="relative mb-6 animate-in slide-in-from-top-2">
-                                <FormLabel className="text-base text-teal-900">Search Patient</FormLabel>
+                                <FormLabel className="text-base text-teal-900 font-semibold">Search Patient</FormLabel>
                                 <Input
                                     placeholder="Type name to search..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="mt-1.5 border-teal-200 focus-visible:ring-teal-500"
+                                    className="mt-1.5 border-teal-200/60 focus-visible:ring-teal-500 bg-white/60 backdrop-blur-sm"
                                 />
                                 {isSearching && <Loader2 className="absolute right-3 top-9 h-4 w-4 animate-spin text-teal-500" />}
 
                                 {searchResults.length > 0 && (
-                                    <div className="absolute z-50 w-full mt-1 bg-white border border-teal-200 rounded-md shadow-lg max-h-60 overflow-auto">
+                                    <div className="absolute z-50 w-full mt-1 bg-white/90 backdrop-blur-md border border-teal-200/60 rounded-xl shadow-xl max-h-60 overflow-auto custom-scrollbar">
                                         {searchResults.map(p => (
                                             <div
                                                 key={p.patient_id}
-                                                className="p-3 hover:bg-teal-50 cursor-pointer border-b border-teal-50 last:border-0 flex justify-between items-center"
+                                                className="p-3 hover:bg-teal-50/80 cursor-pointer border-b border-teal-50/50 last:border-0 flex justify-between items-center transition-colors"
                                                 onClick={() => selectPatient(p)}
                                             >
                                                 <div>
@@ -284,21 +284,20 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                             </div>
                         )}
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <FormField
                                 control={form.control}
                                 name="patient_name"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">Patient Name <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">Patient Name <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="John Doe"
-                                                className="border-teal-200 focus-visible:ring-teal-500 placeholder:text-gray-400 bg-white"
+                                                className="border-teal-200/60 focus-visible:ring-teal-500 placeholder:text-teal-900/40 bg-white/60 backdrop-blur-sm shadow-sm transition-all hover:bg-white/80 focus:bg-white"
                                                 {...field}
                                                 onChange={(e) => {
                                                     field.onChange(e)
-                                                    // Immediately sync name as string doesn't have parse issues
                                                 }}
                                             />
                                         </FormControl>
@@ -311,16 +310,15 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="age"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">Age <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">Age <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
                                                 placeholder="e.g. 65"
                                                 {...field}
-                                                // Value falls back to empty string
                                                 value={field.value ?? ""}
                                                 onChange={(e) => field.onChange(e.target.value)}
-                                                className="border-teal-200 focus-visible:ring-teal-500 placeholder:text-gray-400 bg-white"
+                                                className="border-teal-200/60 focus-visible:ring-teal-500 placeholder:text-teal-900/40 bg-white/60 backdrop-blur-sm shadow-sm transition-all hover:bg-white/80 focus:bg-white"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -334,14 +332,14 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="gender"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">Gender <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">Gender <span className="text-red-500">*</span></FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value || ""}>
                                             <FormControl>
-                                                <SelectTrigger className="w-full border-teal-200 focus:ring-teal-500 bg-white text-black [&[data-placeholder]]:text-gray-400">
+                                                <SelectTrigger className="w-full border-teal-200/60 focus:ring-teal-500 bg-white/60 backdrop-blur-sm text-teal-900 shadow-sm transition-all hover:bg-white/80 focus:bg-white [&[data-placeholder]]:text-teal-900/40">
                                                     <SelectValue placeholder="Select gender" />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent className="bg-white border-teal-200 z-[100]">
+                                            <SelectContent className="bg-white/90 border-teal-200/60 backdrop-blur-xl z-[100]">
                                                 <SelectItem value="Male">Male</SelectItem>
                                                 <SelectItem value="Female">Female</SelectItem>
                                             </SelectContent>
@@ -356,14 +354,14 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="smoking"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">Smoking Status <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">Smoking Status <span className="text-red-500">*</span></FormLabel>
                                         <Select onValueChange={field.onChange} value={field.value || ""}>
                                             <FormControl>
-                                                <SelectTrigger className="w-full border-teal-200 focus:ring-teal-500 bg-white text-black [&[data-placeholder]]:text-gray-400">
+                                                <SelectTrigger className="w-full border-teal-200/60 focus:ring-teal-500 bg-white/60 backdrop-blur-sm text-teal-900 shadow-sm transition-all hover:bg-white/80 focus:bg-white [&[data-placeholder]]:text-teal-900/40">
                                                     <SelectValue placeholder="Select status" />
                                                 </SelectTrigger>
                                             </FormControl>
-                                            <SelectContent className="bg-white border-teal-200 z-[100]">
+                                            <SelectContent className="bg-white/90 border-teal-200/60 backdrop-blur-xl z-[100]">
                                                 <SelectItem value="Non-smoker">Non-smoker</SelectItem>
                                                 <SelectItem value="Ex-smoker">Ex-smoker</SelectItem>
                                                 <SelectItem value="Current Smoker">Current Smoker</SelectItem>
@@ -379,7 +377,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="height"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">Height (cm)</FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">Height (cm)</FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
@@ -387,7 +385,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                                 {...field}
                                                 value={field.value ?? ""}
                                                 onChange={(e) => field.onChange(e.target.value)}
-                                                className="border-teal-200 focus-visible:ring-teal-500 placeholder:text-gray-400 bg-white"
+                                                className="border-teal-200/60 focus-visible:ring-teal-500 placeholder:text-teal-900/40 bg-white/60 backdrop-blur-sm shadow-sm transition-all hover:bg-white/80 focus:bg-white"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -400,7 +398,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="weight"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">Weight (kg)</FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">Weight (kg)</FormLabel>
                                         <FormControl>
                                             <Input
                                                 type="number"
@@ -408,7 +406,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                                 {...field}
                                                 value={field.value ?? ""}
                                                 onChange={(e) => field.onChange(e.target.value)}
-                                                className="border-teal-200 focus-visible:ring-teal-500 placeholder:text-gray-400 bg-white"
+                                                className="border-teal-200/60 focus-visible:ring-teal-500 placeholder:text-teal-900/40 bg-white/60 backdrop-blur-sm shadow-sm transition-all hover:bg-white/80 focus:bg-white"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -421,14 +419,14 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="zip_code"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">Zip Code <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">Zip Code <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <Input
                                                 placeholder="e.g. 110001"
                                                 maxLength={6}
                                                 {...field}
                                                 value={field.value || ""}
-                                                className="border-teal-200 focus-visible:ring-teal-500 placeholder:text-gray-400 bg-white"
+                                                className="border-teal-200/60 focus-visible:ring-teal-500 placeholder:text-teal-900/40 bg-white/60 backdrop-blur-sm shadow-sm transition-all hover:bg-white/80 focus:bg-white"
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -440,7 +438,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="fev1"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">FEV1 (L) <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">FEV1 (L) <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input
@@ -450,10 +448,10 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                                     {...field}
                                                     value={field.value ?? ""}
                                                     onChange={(e) => field.onChange(e.target.value)}
-                                                    className="border-teal-200 focus-visible:ring-teal-500 pr-10 placeholder:text-gray-400 bg-white"
+                                                    className="border-teal-200/60 focus-visible:ring-teal-500 pr-10 placeholder:text-teal-900/40 bg-white/60 backdrop-blur-sm shadow-sm transition-all hover:bg-white/80 focus:bg-white"
                                                 />
 
-                                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-teal-600/50 text-sm">
+                                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-teal-600/70 text-sm font-semibold">
                                                     L
                                                 </div>
                                             </div>
@@ -467,7 +465,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="pef"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">PEF (L/min) <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">PEF (L/min) <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input
@@ -476,9 +474,9 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                                     {...field}
                                                     value={field.value ?? ""}
                                                     onChange={(e) => field.onChange(e.target.value)}
-                                                    className="border-teal-200 focus-visible:ring-teal-500 pr-14 placeholder:text-gray-400 bg-white"
+                                                    className="border-teal-200/60 focus-visible:ring-teal-500 pr-14 placeholder:text-teal-900/40 bg-white/60 backdrop-blur-sm shadow-sm transition-all hover:bg-white/80 focus:bg-white"
                                                 />
-                                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-teal-600/50 text-sm">
+                                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-teal-600/70 text-sm font-semibold">
                                                     L/min
                                                 </div>
                                             </div>
@@ -492,7 +490,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 name="spo2"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel className="text-base text-teal-900">SpO2 (%) <span className="text-red-500">*</span></FormLabel>
+                                        <FormLabel className="text-base text-teal-900 font-medium">SpO2 (%) <span className="text-red-500">*</span></FormLabel>
                                         <FormControl>
                                             <div className="relative">
                                                 <Input
@@ -501,9 +499,9 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                                     {...field}
                                                     value={field.value ?? ""}
                                                     onChange={(e) => field.onChange(e.target.value)}
-                                                    className="border-teal-200 focus-visible:ring-teal-500 pr-10 placeholder:text-gray-400 bg-white"
+                                                    className="border-teal-200/60 focus-visible:ring-teal-500 pr-10 placeholder:text-teal-900/40 bg-white/60 backdrop-blur-sm shadow-sm transition-all hover:bg-white/80 focus:bg-white"
                                                 />
-                                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-teal-600/50 text-sm">
+                                                <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-teal-600/70 text-sm font-semibold">
                                                     %
                                                 </div>
                                             </div>
@@ -520,7 +518,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                     control={form.control}
                                     name="wheezing"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm border-teal-100 bg-teal-50/50">
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border p-4 shadow-sm border-teal-200/50 bg-white/40 hover:bg-white/60 transition-colors backdrop-blur-sm">
                                             <FormControl>
                                                 <Checkbox
                                                     checked={field.value}
@@ -529,10 +527,10 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                                 />
                                             </FormControl>
                                             <div className="space-y-1 leading-none">
-                                                <FormLabel className="text-base text-teal-900">
+                                                <FormLabel className="text-base text-teal-900 font-semibold cursor-pointer">
                                                     Wheezing / Whistling
                                                 </FormLabel>
-                                                <FormDescription className="text-sm text-teal-600/80">
+                                                <FormDescription className="text-sm text-teal-700/70">
                                                     whistling sound when breathing?
                                                 </FormDescription>
                                             </div>
@@ -543,7 +541,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                     control={form.control}
                                     name="shortness_of_breath"
                                     render={({ field }) => (
-                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm border-teal-100 bg-teal-50/50">
+                                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border p-4 shadow-sm border-teal-200/50 bg-white/40 hover:bg-white/60 transition-colors backdrop-blur-sm">
                                             <FormControl>
                                                 <Checkbox
                                                     checked={field.value}
@@ -552,10 +550,10 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                                 />
                                             </FormControl>
                                             <div className="space-y-1 leading-none">
-                                                <FormLabel className="text-base text-teal-900">
+                                                <FormLabel className="text-base text-teal-900 font-semibold cursor-pointer">
                                                     Shortness of Breath
                                                 </FormLabel>
-                                                <FormDescription className="text-sm text-teal-600/80">
+                                                <FormDescription className="text-sm text-teal-700/70">
                                                     Trouble breathing or feeling winded?
                                                 </FormDescription>
                                             </div>
@@ -567,7 +565,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 control={form.control}
                                 name="medication_use"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm border-teal-100 bg-teal-50/50">
+                                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-xl border p-4 shadow-sm border-teal-200/50 bg-white/40 hover:bg-white/60 transition-colors backdrop-blur-sm">
                                         <FormControl>
                                             <Checkbox
                                                 checked={field.value}
@@ -576,10 +574,10 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                             />
                                         </FormControl>
                                         <div className="space-y-1 leading-none">
-                                            <FormLabel className="text-base text-teal-900">
+                                            <FormLabel className="text-base text-teal-900 font-semibold cursor-pointer">
                                                 Currently taking medication?
                                             </FormLabel>
-                                            <FormDescription className="text-sm text-teal-600/80">
+                                            <FormDescription className="text-sm text-teal-700/70">
                                                 Select if you are using inhalers (e.g., Budesonide) or other asthma meds.
                                             </FormDescription>
                                         </div>
@@ -587,16 +585,20 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                 )}
                             />
                         </div>
-                        <div className="flex gap-4">
+                        <div className="flex gap-4 pt-4">
                             <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                                 <PopoverTrigger asChild>
-                                    <Button type="button" variant="outline" className="w-1/3 border-red-200 text-red-700 hover:bg-red-50 hover:text-red-900 transition-colors">
-                                        <Trash2 className="mr-2 h-4 w-4" />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        className="w-1/3 py-6 bg-white/40 border-red-200/60 shadow-lg shadow-red-500/5 hover:bg-red-50/90 hover:border-red-300 hover:shadow-red-500/20 text-red-700/90 hover:text-red-800 transition-all hover:scale-[1.01] font-semibold text-lg backdrop-blur-md"
+                                    >
+                                        <Trash2 className="mr-2 h-5 w-5 opacity-80" />
                                         Clear
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-80 border-none shadow-xl bg-white p-0 overflow-hidden ring-1 ring-black/5">
-                                    <div className="bg-red-50 p-4 border-b border-red-100 flex items-center gap-3">
+                                <PopoverContent className="w-80 border-none shadow-xl bg-white/95 backdrop-blur-xl p-0 overflow-hidden ring-1 ring-black/5">
+                                    <div className="bg-red-50/80 p-4 border-b border-red-100 flex items-center gap-3">
                                         <div className="bg-red-100 p-2 rounded-full">
                                             <Trash2 className="h-5 w-5 text-red-600" />
                                         </div>
@@ -605,7 +607,7 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                             <p className="text-xs text-red-700">This action cannot be undone.</p>
                                         </div>
                                     </div>
-                                    <div className="p-4 bg-white space-y-4">
+                                    <div className="p-4 space-y-4">
                                         <p className="text-sm text-gray-600">
                                             Are you sure you want to remove all entered patient data?
                                         </p>
@@ -618,13 +620,13 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
                                     </div>
                                 </PopoverContent>
                             </Popover>
-                            <Button type="submit" className="flex-1 bg-teal-600 hover:bg-teal-700 text-white shadow-md transition-all hover:scale-[1.01]" disabled={isPending}>
-                                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            <Button type="submit" className="flex-1 bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600 text-white shadow-lg shadow-teal-500/30 transition-all hover:scale-[1.01] font-semibold text-lg py-6" disabled={isPending}>
+                                {isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                                 {isPending ? "Analyzing..." : "Generate Prediction"}
                             </Button>
                         </div>
-                        <p className="text-xs text-muted-foreground text-center">
-                            Press <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100"><span className="text-xs">⌘</span>Enter</kbd> to submit
+                        <p className="text-xs text-teal-800/50 text-center font-medium">
+                            Press <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border border-teal-200 bg-white/50 px-1.5 font-mono text-[10px] text-teal-900 opacity-100"><span className="text-xs">⌘</span>Enter</kbd> to submit
                         </p>
                     </form>
                 </Form>

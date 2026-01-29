@@ -5,67 +5,73 @@ import {
     Activity,
     Wind,
     ShieldAlert,
-    Search,
+    MessageSquareText,
+    Bot,
 } from "lucide-react"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { PatientIntakeForm } from "@/components/dashboard/PatientIntakeForm"
 import { RiskGaugeCard } from "@/components/dashboard/RiskGaugeCard"
 import { HistoryTrendChart } from "@/components/dashboard/HistoryTrendChart"
-import { PredictionResponse } from "@/lib/api/generated"
-import { useHistoryGet, useStatsGet } from "@/lib/api/generated"
+import { PredictionResponse, useHistoryGet, useStatsGet } from "@/lib/api/generated"
 import { motion, AnimatePresence } from "framer-motion"
+import { cn } from "@/lib/utils"
+import { useSearchParams } from "next/navigation"
 
-// Phase 8 Imports
+// Components
 import { EnvironmentalContextCard } from "@/components/dashboard/EnvironmentalContextCard"
 import { EnvironmentalFallback } from "@/components/dashboard/EnvironmentalFallback"
 import { ErrorBoundary } from "@/components/ui/error-boundary"
-
-// Phase 9 Imports
-// Phase 9 Imports
 import { AnomalyAlert } from "@/components/dashboard/AnomalyAlert"
-
-// Phase 10 Imports
 import { ExplainerChat, Message } from "@/components/dashboard/ExplainerChat"
-import { MessageSquareText, Bot } from "lucide-react"
+import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid"
 
 export default function DashboardPage() {
+    const searchParams = useSearchParams()
+    const searchTerm = searchParams.get("search")?.toLowerCase() || ""
+
     const [predictionResult, setPredictionResult] = useState<PredictionResponse | null>(null)
     const [showAnomalyAlert, setShowAnomalyAlert] = useState(false)
-    // Phase 10 State
     const [showChat, setShowChat] = useState(false)
     const [currentFeatures, setCurrentFeatures] = useState<any>(null)
     const [messages, setMessages] = useState<Message[]>([])
 
-    // Add history refresh trigger
     const { data: historyData, refetch: refetchHistory } = useHistoryGet()
     const { data: statsData, refetch: refetchStats } = useStatsGet()
 
-    // Force refetch on mount to ensure fresh data
+    // Filter history based on search
+    const filteredHistory = historyData?.data?.filter(record => {
+        if (!searchTerm) return true
+        const nameMatch = record.patient_name?.toLowerCase().includes(searchTerm)
+        const idMatch = record.id.toLowerCase().includes(searchTerm)
+        return nameMatch || idMatch
+    }) || []
+
     useEffect(() => {
         refetchHistory()
         refetchStats()
     }, [refetchHistory, refetchStats])
 
-    // Refresh history when a new prediction is made
     const handleSuccess = (result: PredictionResponse, features?: any) => {
         setPredictionResult(result)
         if (features) setCurrentFeatures(features)
 
-        // Reset Chat with Welcome Message
         setMessages([{
             id: "welcome",
             role: "assistant",
             text: `I've analyzed the patient profile (Risk: ${(result.prediction.risk_score * 100).toFixed(0)}%). Ask me about the key drivers.`
         }])
 
-        // Phase 9: Logic to trigger anomaly alert
         if (result.anomaly_detection && result.anomaly_detection.is_outlier) {
             setShowAnomalyAlert(true)
         }
 
-        // Wait a small moment for DB propagation then refetch
         setTimeout(() => {
             refetchHistory()
             refetchStats()
@@ -73,8 +79,11 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="flex flex-col h-full gap-4 p-4 pt-0 relative overflow-hidden">
-            {/* Phase 10: Explainer Chatbot */}
+        <div className="flex flex-col min-h-screen gap-6 p-6 relative bg-background/50">
+            {/* Background Mesh */}
+            <div className="absolute inset-0 mesh-gradient-light opacity-30 pointer-events-none -z-10" />
+
+            {/* Explainer Chat Overlay */}
             <ExplainerChat
                 isOpen={showChat}
                 onClose={() => setShowChat(false)}
@@ -86,20 +95,24 @@ export default function DashboardPage() {
                 setMessages={setMessages}
             />
 
-            {/* Fab for Chat (Only visible when prediction exists) */}
-            {predictionResult && !showChat && (
-                <motion.button
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    whileHover={{ scale: 1.1 }}
-                    onClick={() => setShowChat(true)}
-                    className="fixed bottom-8 right-8 z-30 h-14 w-14 rounded-full bg-teal-600 text-white shadow-xl flex items-center justify-center hover:bg-teal-700 transition-colors"
-                >
-                    <MessageSquareText className="h-6 w-6" />
-                </motion.button>
-            )}
+            {/* Chat FAB */}
+            <AnimatePresence>
+                {predictionResult && !showChat && (
+                    <motion.button
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        exit={{ scale: 0 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => setShowChat(true)}
+                        className="fixed bottom-8 right-8 z-50 h-14 w-14 rounded-full bg-teal-600 text-white shadow-lg shadow-teal-500/40 flex items-center justify-center hover:bg-teal-700 transition-colors"
+                    >
+                        <MessageSquareText className="h-6 w-6" />
+                    </motion.button>
+                )}
+            </AnimatePresence>
 
-            {/* Phase 9: Global Anomaly Alert Modal */}
+            {/* Anomaly Alert Modal */}
             {predictionResult?.anomaly_detection && (
                 <AnomalyAlert
                     isOpen={showAnomalyAlert}
@@ -109,69 +122,74 @@ export default function DashboardPage() {
                 />
             )}
 
-            <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                <Card className="border-teal-200 bg-teal-50/50 shadow-sm transition-all hover:bg-teal-50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-semibold text-teal-800 uppercase tracking-wide">
-                            Total Patients
-                        </CardTitle>
-                        <Activity className="h-5 w-5 text-teal-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-4xl font-extrabold text-teal-900 mt-2">
-                            {statsData?.data?.total_patients || 0}
+            {/* Top Stats Row (Bento) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <BentoGridItem
+                    className="md:col-span-1 bg-white/60 dark:bg-slate-900/60"
+                >
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">Total Patients</h3>
+                            <Activity className="h-5 w-5 text-teal-600" />
                         </div>
-                        <p className="text-xs font-medium text-teal-600/80 mt-1">
-                            Analyzed to date
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card className="border-red-200 bg-red-50/30 shadow-sm transition-all hover:bg-red-50/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-semibold text-red-800 uppercase tracking-wide">
-                            High Risk
-                        </CardTitle>
-                        <ShieldAlert className="h-5 w-5 text-red-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-4xl font-extrabold text-red-900 mt-2">
-                            {statsData?.data?.high_risk_count || 0}
+                        <div>
+                            <div className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+                                {statsData?.data?.total_patients || 0}
+                            </div>
+                            <p className="text-xs text-slate-500 mt-1 font-medium">Analyzed to date</p>
                         </div>
-                        <p className="text-xs font-medium text-red-600/80 mt-1">
-                            Patients flagged
-                        </p>
-                    </CardContent>
-                </Card>
-                <Card className="border-teal-200 bg-emerald-50/30 shadow-sm transition-all hover:bg-emerald-50/50">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-semibold text-emerald-800 uppercase tracking-wide">
-                            Avg FEV1
-                        </CardTitle>
-                        <Wind className="h-5 w-5 text-emerald-600" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-4xl font-extrabold text-emerald-900 mt-2">
-                            {statsData?.data?.avg_fev1?.toFixed(1) || "0.0"} <span className="text-lg font-semibold text-emerald-600/70">L</span>
+                    </div>
+                </BentoGridItem>
+
+                <BentoGridItem
+                    className="md:col-span-1 bg-white/60 dark:bg-slate-900/60"
+                >
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">High Risk</h3>
+                            <ShieldAlert className="h-5 w-5 text-rose-500" />
                         </div>
-                        <p className="text-xs font-medium text-emerald-600/80 mt-1">
-                            Pop. Average
-                        </p>
-                    </CardContent>
-                </Card>
+                        <div>
+                            <div className="text-4xl font-black text-rose-600 tracking-tight">
+                                {statsData?.data?.high_risk_count || 0}
+                            </div>
+                            <p className="text-xs text-rose-600/70 mt-1 font-medium">Critical cases flagged</p>
+                        </div>
+                    </div>
+                </BentoGridItem>
+
+                <BentoGridItem
+                    className="md:col-span-1 bg-white/60 dark:bg-slate-900/60"
+                >
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-medium text-slate-500 uppercase tracking-wider">Avg FEV1</h3>
+                            <Wind className="h-5 w-5 text-emerald-600" />
+                        </div>
+                        <div>
+                            <div className="text-4xl font-black text-emerald-600 tracking-tight">
+                                {statsData?.data?.avg_fev1?.toFixed(1) || "0.0"} <span className="text-xl font-semibold text-emerald-600/60">L</span>
+                            </div>
+                            <p className="text-xs text-emerald-600/70 mt-1 font-medium">Population Average</p>
+                        </div>
+                    </div>
+                </BentoGridItem>
             </div>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <div className="col-span-4">
+
+            {/* Main Content Split */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch relative">
+                {/* Left Column: Intake or Result (Span 2) - Master of Height */}
+                <div className="lg:col-span-2 space-y-6">
                     <AnimatePresence mode="wait">
                         {predictionResult ? (
                             <motion.div
                                 key="result"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
+                                initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                                exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.4 }}
-                                className="space-y-2"
+                                className="space-y-6"
                             >
-                                {/* Phase 8 Integration: Environmental Data */}
                                 <ErrorBoundary fallback={<EnvironmentalFallback />}>
                                     <EnvironmentalContextCard
                                         data={predictionResult.environmental_data}
@@ -185,18 +203,20 @@ export default function DashboardPage() {
                                     upperBound={predictionResult.trust_signal.prediction_interval.upper_bound}
                                     trustRating={predictionResult.trust_signal.trust_rating}
                                 />
-                                <div className="flex justify-center flex-col items-center gap-2">
+
+                                <div className="flex justify-center flex-col items-center gap-3 p-4 glass rounded-xl border-dashed border-2 border-teal-200/30">
                                     <button
-                                        className="text-sm text-teal-600 font-medium hover:underline flex items-center gap-1"
+                                        className="text-sm text-teal-700 font-bold hover:text-teal-900 flex items-center gap-2 group transition-colors"
                                         onClick={() => setShowChat(true)}
                                     >
-                                        <Bot className="h-4 w-4" /> Ask Dr. AI for explanation
+                                        <Bot className="h-5 w-5 text-teal-600 group-hover:scale-110 transition-transform" />
+                                        Explain this prediction
                                     </button>
                                     <button
-                                        className="text-sm text-muted-foreground underline hover:text-primary transition-colors"
+                                        className="text-xs text-muted-foreground hover:text-primary underline decoration-dotted underline-offset-4"
                                         onClick={() => setPredictionResult(null)}
                                     >
-                                        Reset and analyze new patient
+                                        Start New Analysis
                                     </button>
                                 </div>
                             </motion.div>
@@ -216,71 +236,87 @@ export default function DashboardPage() {
                         )}
                     </AnimatePresence>
                 </div>
-                <div className="col-span-3">
-                    <Card className="flex flex-col border-teal-200 shadow-sm bg-white h-[600px]">
-                        <CardHeader className="bg-teal-50/50 border-b border-teal-100 py-4">
-                            <CardTitle className="text-teal-900 text-xl font-semibold">Recent Predictions</CardTitle>
-                        </CardHeader>
-                        <CardContent className="flex-1 flex flex-col pt-4 overflow-hidden">
-                            <div className="flex-1 overflow-y-auto pr-2 min-h-0 space-y-4">
-                                <AnimatePresence mode="popLayout">
-                                    {historyData?.data && historyData.data.length > 0 ? (
-                                        historyData.data.map((record, index) => (
-                                            <motion.div
-                                                key={record.id}
-                                                initial={{ opacity: 0, x: 20 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                exit={{ opacity: 0, x: -20 }}
-                                                transition={{ delay: index * 0.05 }}
-                                                className="flex items-center justify-between border-b border-teal-100/50 pb-3 last:border-0 last:pb-0"
-                                            >
-                                                <div className="space-y-1">
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="text-base font-semibold leading-none text-teal-900">
-                                                            {record.patient_name || `Patient ${record.id.slice(0, 4)}`}
+
+                {/* Right Column: History Sidebar (Span 1) - Follower of Height */}
+                <div className="lg:col-span-1 relative min-h-[500px]">
+                    <div className="lg:absolute lg:inset-0 h-full w-full">
+                        <Card variant="glass" className="flex flex-col h-full relative overflow-hidden backdrop-blur-xl bg-white/40 border-white/20 rounded-3xl">
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/40 to-transparent pointer-events-none" />
+                            <CardHeader className="py-4 border-b border-teal-100/30 relative z-10 shrink-0">
+                                <CardTitle className="text-lg font-semibold text-teal-900/80 flex items-center gap-2">
+                                    <Activity className="h-4 w-4" /> Recent Activity
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="flex-1 overflow-hidden p-0 relative z-10">
+                                <div className="h-full overflow-y-auto px-4 py-2 space-y-3 custom-scrollbar">
+                                    <AnimatePresence mode="popLayout">
+                                        {filteredHistory.length > 0 ? (
+                                            filteredHistory.map((record, index) => (
+                                                <motion.div
+                                                    key={record.id}
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -20 }}
+                                                    transition={{ delay: index * 0.05 }}
+                                                    className="group p-3 rounded-xl bg-white/50 border border-white/40 hover:bg-white/80 hover:shadow-md transition-all cursor-default"
+                                                >
+                                                    <div className="flex justify-between items-start mb-1">
+                                                        <p className="font-semibold text-slate-800 text-sm">
+                                                            {record.patient_name || "Anonymous Patient"}
                                                         </p>
-                                                        {(record as any).flagged_features && (record as any).flagged_features.length > 0 && (
-                                                            <div className="group relative">
-                                                                <ShieldAlert className="h-4 w-4 text-amber-500 cursor-help" />
-                                                                <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 w-48 bg-amber-900/95 backdrop-blur-sm text-white text-xs p-2 rounded-lg shadow-xl opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition-all pointer-events-none z-50">
-                                                                    <p className="font-bold border-b border-white/20 pb-1 mb-1 text-[10px] uppercase">Anomaly Detected</p>
-                                                                    <ul className="list-disc pl-3 space-y-0.5">
-                                                                        {(record as any).flagged_features.map((f: string, i: number) => (
-                                                                            <li key={i}>{f}</li>
-                                                                        ))}
-                                                                    </ul>
-                                                                </div>
-                                                            </div>
+                                                        <span className={cn(
+                                                            "text-xs font-bold px-2 py-0.5 rounded-full",
+                                                            record.risk_score > 0.7 ? "bg-red-100 text-red-700" :
+                                                                record.risk_score > 0.3 ? "bg-amber-100 text-amber-700" :
+                                                                    "bg-emerald-100 text-emerald-700"
+                                                        )}>
+                                                            {(record.risk_score * 100).toFixed(0)}%
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex justify-between items-end">
+                                                        <div className="text-xs text-slate-500">
+                                                            {new Date(record.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} • {record.age} yrs
+                                                        </div>
+                                                        {(record as any).flagged_features?.length > 0 && (
+                                                            <TooltipProvider>
+                                                                <Tooltip delayDuration={0}>
+                                                                    <TooltipTrigger asChild>
+                                                                        <ShieldAlert className="h-4 w-4 text-amber-500 cursor-help hover:text-amber-600 transition-colors" />
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent side="left" className="bg-white/95 backdrop-blur-xl border-amber-200 text-amber-900 shadow-xl p-3">
+                                                                        <div className="flex items-center gap-2 mb-2 border-b border-amber-100 pb-1">
+                                                                            <ShieldAlert className="h-3 w-3 text-amber-500" />
+                                                                            <p className="font-semibold text-xs">Anomaly Factors</p>
+                                                                        </div>
+                                                                        <ul className="space-y-1">
+                                                                            {(record as any).flagged_features.map((f: string, i: number) => (
+                                                                                <li key={i} className="text-xs flex items-center gap-1.5 capitalize">
+                                                                                    <span className="h-1 w-1 rounded-full bg-amber-400" />
+                                                                                    {f.replace(/_/g, ' ')}
+                                                                                </li>
+                                                                            ))}
+                                                                        </ul>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
                                                         )}
                                                     </div>
-                                                    <p className="text-sm text-muted-foreground mt-1">
-                                                        <span className="font-medium">{record.age} years old</span>
-                                                    </p>
-                                                    <p className="text-xs text-muted-foreground/60 mt-0.5">
-                                                        {new Date(record.created_at).toLocaleDateString("en-GB", { day: 'numeric', month: 'short', year: 'numeric' })}
-                                                    </p>
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className={`text-sm font-bold ${record.risk_score > 0.7 ? "text-red-600" :
-                                                        record.risk_score > 0.3 ? "text-amber-600" : "text-emerald-600"
-                                                        }`}>
-                                                        {(record.risk_score * 100).toFixed(0)}% Risk
-                                                    </span>
-                                                </div>
-                                            </motion.div>
-                                        ))
-                                    ) : (
-                                        <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
-                                            <p className="text-sm">No recent history</p>
-                                        </div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                            <div className="mt-2 pt-2 border-t border-teal-100">
+                                                </motion.div>
+                                            ))
+                                        ) : (
+                                            <div className="flex flex-col items-center justify-center h-40 text-muted-foreground/50">
+                                                <p className="text-sm">No recent history</p>
+                                            </div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            </CardContent>
+                            {/* Mini Chart at bottom of sidebar */}
+                            <div className="h-[120px] border-t border-teal-100/30 p-4 bg-white/20 relative z-10 shrink-0">
                                 {historyData?.data && <HistoryTrendChart data={historyData.data} />}
                             </div>
-                        </CardContent>
-                    </Card>
+                        </Card>
+                    </div>
                 </div>
             </div>
         </div>
