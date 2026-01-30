@@ -11,6 +11,16 @@ We use the modern Vercel project configuration where the **Root Directory** is s
 4.  Click **Edit** and set it to: `apps/web`.
 5.  Click **Save**.
 
+### Environment Variables
+For the frontend to talk to the live backend, you must set the API URL.
+
+1.  Go to **Settings** > **Environment Variables**.
+2.  Add a new variable:
+    - **Key:** `NEXT_PUBLIC_API_URL`
+    - **Value:** `https://respira-ai.onrender.com` (or your specific Render URL)
+3.  Click **Save**.
+4.  **Redeploy** (Go to Deployments > internal menu on the latest build > Redeploy) for the changes to take effect.
+
 ### Build Settings
 Vercel should automatically detect Next.js.
 - **Framework Preset:** Next.js
