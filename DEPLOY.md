@@ -18,6 +18,8 @@ We use **Render** for the Python/FastAPI backend (due to ML model requirements) 
 2.  **Configuration:**
     - **Name:** `respira-api` (or similar)
     - **Root Directory:** `apps/api`
+        > [!IMPORTANT]
+        > You **MUST** set the Root Directory to `apps/api`. If you leave it blank, Render will look for the Dockerfile in the wrong place and fail.
     - **Runtime:** `Docker`
     - **Instance Type:** Free (or Starter if models need more RAM).
 
