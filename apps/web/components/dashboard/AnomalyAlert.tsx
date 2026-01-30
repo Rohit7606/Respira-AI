@@ -47,7 +47,7 @@ export function AnomalyAlert({ isOpen, onAcknowledge, anomalyScore, flaggedFeatu
                                 <div className="space-y-2">
                                     <h3 className="font-bold text-xl text-amber-900">Unusual Patient Profile</h3>
                                     <p className="text-sm text-amber-700/80">
-                                        The Trust Engine detected that this patient's data deviates significantly from typical asthma profiles.
+                                        The Trust Engine detected that this patient&apos;s data deviates significantly from typical asthma profiles.
                                     </p>
                                 </div>
 

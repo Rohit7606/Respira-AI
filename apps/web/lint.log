@@ -1,0 +1,80 @@
+﻿
+> web@0.1.0 lint
+> eslint
+
+
+D:\College\College Projects\Respira-AI\apps\web\app\(dashboard)\anomalies\page.tsx
+    6:36  warning  'XCircle' is defined but never used       @typescript-eslint/no-unused-vars
+  121:57  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  121:93  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:60  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\College\College Projects\Respira-AI\apps\web\app\(dashboard)\dashboard\page.tsx
+   33:10  warning  'BentoGrid' is defined but never used     @typescript-eslint/no-unused-vars
+   42:60  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   61:67  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  280:69  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  292:89  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\College\College Projects\Respira-AI\apps\web\app\(dashboard)\history\page.tsx
+   5:16  warning  'CardContent' is defined but never used   @typescript-eslint/no-unused-vars
+  18:14  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  36:43  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\College\College Projects\Respira-AI\apps\web\app\auth\page.tsx
+   6:19  warning  'ShieldCheck' is defined but never used   @typescript-eslint/no-unused-vars
+   7:10  warning  'Button' is defined but never used        @typescript-eslint/no-unused-vars
+  54:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\College\College Projects\Respira-AI\apps\web\components\dashboard\AnomalyAlert.tsx
+   4:5   warning  'AlertDialog' is defined but never used                          @typescript-eslint/no-unused-vars
+   5:5   warning  'AlertDialogAction' is defined but never used                    @typescript-eslint/no-unused-vars
+   6:5   warning  'AlertDialogContent' is defined but never used                   @typescript-eslint/no-unused-vars
+   7:5   warning  'AlertDialogDescription' is defined but never used               @typescript-eslint/no-unused-vars
+   8:5   warning  'AlertDialogFooter' is defined but never used                    @typescript-eslint/no-unused-vars
+   9:5   warning  'AlertDialogHeader' is defined but never used                    @typescript-eslint/no-unused-vars
+  10:5   warning  'AlertDialogTitle' is defined but never used                     @typescript-eslint/no-unused-vars
+  50:84  error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+D:\College\College Projects\Respira-AI\apps\web\components\dashboard\ExplainerChat.tsx
+   5:19  warning  'Stethoscope' is defined but never used   @typescript-eslint/no-unused-vars
+   5:32  warning  'Bot' is defined but never used           @typescript-eslint/no-unused-vars
+  21:19  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\College\College Projects\Respira-AI\apps\web\components\dashboard\HistoryTrendChart.tsx
+  4:57  warning  'XAxis' is defined but never used  @typescript-eslint/no-unused-vars
+  4:64  warning  'YAxis' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\College\College Projects\Respira-AI\apps\web\components\dashboard\PatientIntakeForm.tsx
+   49:74  error    Unexpected any. Specify a different type                                                                 @typescript-eslint/no-explicit-any
+   64:55  error    Unexpected any. Specify a different type                                                                 @typescript-eslint/no-explicit-any
+   97:8   warning  React Hook useEffect has a missing dependency: 'form'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  116:34  error    Unexpected any. Specify a different type                                                                 @typescript-eslint/no-explicit-any
+  132:32  error    Unexpected any. Specify a different type                                                                 @typescript-eslint/no-explicit-any
+  167:56  error    Unexpected any. Specify a different type                                                                 @typescript-eslint/no-explicit-any
+  196:37  error    Unexpected any. Specify a different type                                                                 @typescript-eslint/no-explicit-any
+
+D:\College\College Projects\Respira-AI\apps\web\components\history\PatientProgressView.tsx
+    4:10  warning  'motion' is defined but never used           @typescript-eslint/no-unused-vars
+    4:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+   19:5   warning  'Calendar' is defined but never used         @typescript-eslint/no-unused-vars
+   56:60  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+   56:91  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+  222:48  error    Unexpected any. Specify a different type     @typescript-eslint/no-explicit-any
+
+D:\College\College Projects\Respira-AI\apps\web\components\ui\data-table.tsx
+  35:19  warning  Compilation Skipped: Use of incompatible library
+
+This API returns functions which cannot be memoized without leading to stale UI. To prevent this, by default React Compiler will skip memoizing this component/hook. However, you may see issues if values from this API are passed to other components/hooks that are memoized.
+
+D:\College\College Projects\Respira-AI\apps\web\components\ui\data-table.tsx:35:19
+  33 |     const [sorting, setSorting] = React.useState<SortingState>([])
+  34 |
+> 35 |     const table = useReactTable({
+     |                   ^^^^^^^^^^^^^ TanStack Table's `useReactTable()` API returns functions that cannot be memoized safely
+  36 |         data,
+  37 |         columns,
+  38 |         getCoreRowModel: getCoreRowModel(),  react-hooks/incompatible-library
+
+Γ£û 42 problems (21 errors, 21 warnings)
+

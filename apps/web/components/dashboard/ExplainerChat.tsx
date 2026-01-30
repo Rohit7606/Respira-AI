@@ -102,14 +102,14 @@ export function ExplainerChat({ isOpen, onClose, currentPrediction, messages, se
                 risk_score: currentPrediction.risk_score
             })
 
-            let fullText = response.data.text
+            let fullText = response.data.text || ""
 
             // Extract Suggested Questions
             const suggestionMarker = "SUGGESTED_QUESTIONS"
             if (fullText.includes(suggestionMarker)) {
                 const parts = fullText.split(suggestionMarker)
-                const mainText = parts[0].replace(/---\s*$/, '').trim()
-                const suggestionBlock = parts[1]
+                const mainText = (parts[0] || "").replace(/---\s*$/, '').trim()
+                const suggestionBlock = parts[1] || ""
 
                 // Parse lines starting with - or •
                 const newSuggestions = suggestionBlock

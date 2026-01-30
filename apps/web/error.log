@@ -1,0 +1,2 @@
+﻿components/dashboard/ExplainerChat.tsx(111,34): error TS2532: Object is possibly 'undefined'.
+components/dashboard/ExplainerChat.tsx(115,40): error TS18048: 'suggestionBlock' is possibly 'undefined'.
