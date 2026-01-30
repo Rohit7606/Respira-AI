@@ -1,0 +1,68 @@
+﻿
+> web@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.1 (Turbopack)
+- Environments: .env.local
+
+node.exe : ΓÜá The "middleware" file convention is 
+deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Program 
+Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ΓÜá The " 
+   middle...leware-to-proxy:String) [], RemoteExcepti  
+  on
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 5.7s
+  Skipping validation of types
+  Collecting page data using 13 workers ...
+  Generating static pages using 13 workers (0/8) ...
+(node:21612) Warning: `--localstorage-file` was 
+provided without a valid path
+(Use `node --trace-warnings ...` to show where the 
+warning was created)
+Γ¿» useSearchParams() should be wrapped in a suspense 
+boundary at page "/anomalies". Read more: https://nextj
+s.org/docs/messages/missing-suspense-with-csr-bailout
+    at Q (D:\College\College Projects\Respira-AI\apps\w
+eb\.next\server\chunks\ssr\node_modules_cf1f3d2c._.js:2
+:2111)
+    at o (D:\College\College Projects\Respira-AI\apps\w
+eb\.next\server\chunks\ssr\node_modules_cf1f3d2c._.js:4
+:5284)
+    at ar (D:\College\College Projects\Respira-AI\apps\
+web\.next\server\chunks\ssr\_55091359._.js:5:2582)
+    at an (D:\College\College Projects\Respira-AI\apps\
+web\node_modules\next\dist\compiled\next-server\app-pag
+e-turbo.runtime.prod.js:2:84360)
+    at ai (D:\College\College Projects\Respira-AI\apps\
+web\node_modules\next\dist\compiled\next-server\app-pag
+e-turbo.runtime.prod.js:2:86179)
+    at ai (D:\College\College Projects\Respira-AI\apps\
+web\node_modules\next\dist\compiled\next-server\app-pag
+e-turbo.runtime.prod.js:2:104708)
+    at al (D:\College\College Projects\Respira-AI\apps\
+web\node_modules\next\dist\compiled\next-server\app-pag
+e-turbo.runtime.prod.js:2:107953)
+    at as (D:\College\College Projects\Respira-AI\apps\
+web\node_modules\next\dist\compiled\next-server\app-pag
+e-turbo.runtime.prod.js:2:105368)
+    at am (D:\College\College Projects\Respira-AI\apps\
+web\node_modules\next\dist\compiled\next-server\app-pag
+e-turbo.runtime.prod.js:2:112882)
+    at au (D:\College\College Projects\Respira-AI\apps\
+web\node_modules\next\dist\compiled\next-server\app-pag
+e-turbo.runtime.prod.js:2:109985)
+Error occurred prerendering page "/anomalies". Read 
+more: https://nextjs.org/docs/messages/prerender-error
+Export encountered an error on 
+/(dashboard)/anomalies/page: /anomalies, exiting the 
+build.
+Γ¿» Next.js build worker exited with code: 1 and 
+signal: null

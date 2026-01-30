@@ -3,13 +3,15 @@
 import * as React from "react"
 import { useHistoryGet } from "@/lib/api/generated"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
-import { ShieldAlert, CheckCircle, XCircle, Calendar } from "lucide-react"
+import { ShieldAlert, CheckCircle, XCircle, Calendar, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
 import { motion, AnimatePresence } from "framer-motion"
 
-export default function AnomaliesPage() {
-    const { data: historyData } = useHistoryGet()
+export const dynamic = 'force-dynamic'
+
+function AnomaliesContent() {
+    const { data: historyData, isLoading } = useHistoryGet()
     const [dismissedIds, setDismissedIds] = React.useState<Set<string>>(new Set())
 
     // Load dismissed IDs from localStorage on mount
@@ -36,6 +38,14 @@ export default function AnomaliesPage() {
         toast.success("Anomaly Dismissed", {
             description: `Record ${id.slice(0, 8)} has been hidden.`
         })
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex h-full items-center justify-center p-12">
+                <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
+            </div>
+        )
     }
 
     return (
@@ -162,5 +172,17 @@ export default function AnomaliesPage() {
                 )}
             </div>
         </div>
+    )
+}
+
+export default function AnomaliesPage() {
+    return (
+        <React.Suspense fallback={
+            <div className="flex h-full items-center justify-center p-12">
+                <Loader2 className="h-8 w-8 animate-spin text-amber-600" />
+            </div>
+        }>
+            <AnomaliesContent />
+        </React.Suspense>
     )
 }

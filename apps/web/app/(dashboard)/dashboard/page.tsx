@@ -1,12 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import {
     Activity,
     Wind,
     ShieldAlert,
     MessageSquareText,
     Bot,
+    Loader2,
 } from "lucide-react"
 import {
     Tooltip,
@@ -32,7 +33,9 @@ import { AnomalyAlert } from "@/components/dashboard/AnomalyAlert"
 import { ExplainerChat, Message } from "@/components/dashboard/ExplainerChat"
 import { BentoGrid, BentoGridItem } from "@/components/ui/bento-grid"
 
-export default function DashboardPage() {
+export const dynamic = 'force-dynamic'
+
+function DashboardContent() {
     const searchParams = useSearchParams()
     const searchTerm = searchParams.get("search")?.toLowerCase() || ""
 
@@ -320,5 +323,18 @@ export default function DashboardPage() {
                 </div>
             </div>
         </div>
+    )
+}
+
+export default function DashboardPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <Loader2 className="h-10 w-10 animate-spin text-teal-600" />
+                <p className="text-teal-900/60 font-medium">Loading Dashboard...</p>
+            </div>
+        }>
+            <DashboardContent />
+        </Suspense>
     )
 }

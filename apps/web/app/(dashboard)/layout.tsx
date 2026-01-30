@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { Sidebar } from "@/components/layout/Sidebar"
 import { Header } from "@/components/layout/Header"
 
@@ -10,7 +11,9 @@ export default function DashboardLayout({
         <div className="grid min-h-screen w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
             <Sidebar className="hidden border-r md:block" />
             <div className="flex flex-col">
-                <Header />
+                <Suspense fallback={<div className="h-20 border-b border-teal-100/40 bg-white/70" />}>
+                    <Header />
+                </Suspense>
                 <main className="flex flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-6">
                     {children}
                 </main>
