@@ -1,5 +1,10 @@
 # Respira-AI Deployment Guide
 
+> [!TIP]
+> **Live Production URLs**
+> - **Frontend (Vercel):** [https://respira-ai.vercel.app](https://respira-ai.vercel.app)
+> - **Backend (Render):** [https://respira-ai.onrender.com](https://respira-ai.onrender.com)
+
 This guide outlines the steps to deploy the Respira-AI application to production.
 We use **Render** for the Python/FastAPI backend (due to ML model requirements) and **Vercel** for the Next.js frontend.
 
