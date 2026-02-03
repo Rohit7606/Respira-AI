@@ -27,7 +27,7 @@ class ExplainerService:
                 prompt_text = self._build_prompt(query, features, risk_score)
                 
                 # REST API Setup
-                model = "gemini-2.5-flash"
+                model = "gemini-1.5-flash"
                 url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={self.api_key}"
                 headers = {"Content-Type": "application/json"}
                 data = {
