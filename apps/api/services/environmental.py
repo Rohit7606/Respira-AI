@@ -14,7 +14,7 @@ class EnvironmentalData(BaseModel):
 
 class EnvironmentalService:
     def __init__(self):
-        self.api_key = os.environ.get("e7e5c7a376e1cfa3fa1c3524a90cb080")
+        self.api_key = os.environ.get("OPENWEATHERMAP_API_KEY")
         self.base_url = "http://api.openweathermap.org"
 
     async def get_data(self, zip_code: str, country_code: str = "US") -> EnvironmentalData:

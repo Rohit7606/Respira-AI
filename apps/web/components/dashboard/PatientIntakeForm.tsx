@@ -179,7 +179,8 @@ export function PatientIntakeForm({ onPredictionSuccess, onPredictionSuccessWith
             try {
                 // In a real app config, use the proper API URL. 
                 // Assuming proxy or localhost for now based on context.
-                const res = await fetch(`http://localhost:8000/patients?query=${encodeURIComponent(searchTerm)}`)
+                const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+                const res = await fetch(`${apiUrl}/patients?query=${encodeURIComponent(searchTerm)}`)
                 if (res.ok) {
                     const data = await res.json()
                     setSearchResults(data)

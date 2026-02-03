@@ -120,7 +120,7 @@ class ExplainerService:
 
         return (
             "### Clinical Decision Support\n\n"
-            "I am currently operating in offline mode. I can still analyze the risk score data.\n\n"
+            "I am currently operating in offline mode (External AI Service Unavailable).\n\n"
             "**Suggested Questions:**\n"
             "• Why is the risk high?\n"
             "• Show clinical guidelines.\n"
