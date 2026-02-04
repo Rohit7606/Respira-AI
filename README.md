@@ -1,6 +1,6 @@
 # Respira-AI: Intelligent Respiratory Clinical Decision Support 🫁
 
-![Respira-AI Hero](https://via.placeholder.com/1920x1080/1e40af/ffffff?text=Respira-AI+Clinical+Dashboard)
+<img width="1920" height="1440" alt="Image" src="https://github.com/user-attachments/assets/ca366449-c6d0-4337-b0df-74193ccc42ce" />
 
 [![Next.js](https://img.shields.io/badge/Next.js-16.1.1-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-Python-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -26,7 +26,7 @@
 
 ## Project Objective
 
-**Respira-AI** (Internal Codename: **PROJ-RESPIRA**) is an advanced Clinical Decision Support System engineered to assist medical professionals in diagnosing respiratory conditions with probabilistic confidence scoring.
+**Respira-AI** is an advanced Clinical Decision Support System engineered to assist medical professionals in diagnosing respiratory conditions with probabilistic confidence scoring.
 
 The platform aims to:
 - **Hybrid Clinical Engine:** Move beyond simple rule-based logic to a machine learning model that understands physiological context through advanced feature engineering.
@@ -54,7 +54,8 @@ Respira-AI uses a **"Hybrid Clinical Engine" Architecture**. Unlike traditional 
 
 ### Architecture & Workflow:
 
-![Respira-AI Architecture](architecture_diagram.png)
+<img width="2752" height="1536" alt="Image" src="https://github.com/user-attachments/assets/3009e4dc-a089-4215-8682-4d761a2171be" />
+
 *High-level system architecture showing the data flow from clinical input to probabilistic risk assessment*
 
 1. **Clinical Data Entry:** Healthcare provider inputs patient demographics (Age, Gender, Height) and spirometry measurements (FEV1, FVC, PEF, FEV1/FVC ratio, SpO2).
@@ -97,15 +98,17 @@ Respira-AI uses a **"Hybrid Clinical Engine" Architecture**. Unlike traditional 
 
 ## 📸 System Visuals
 
-### 1. The Clinical Interface
-*Clean, medical-grade data entry form with real-time validation and demographic-aware field suggestions*
+### 1. Probabilistic Risk Assessment
+*The AI Engine normalizes input data to present a granular risk score (e.g., 73%) with confidence intervals, moving beyond binary diagnosis.*
+<img width="100%" alt="Risk Prediction Engine" src="https://github.com/user-attachments/assets/d3dd2d06-b9d6-41b6-a760-aca17a63e533" />
 
-![Clinical Input Interface](https://via.placeholder.com/1920x1080/f1f5f9/1e293b?text=Clinical+Input+Form)
+### 2. Longitudinal Patient Tracking
+*Clinicians can visualize the "Risk Trajectory" over time to monitor disease progression or recovery across multiple visits.*
+<img width="100%" alt="Patient History Graph" src="https://github.com/user-attachments/assets/748f1188-899a-45c4-993d-beeef2834927" />
 
-### 2. Risk Analysis Engine
-*Probabilistic prediction results with confidence scoring, feature importance breakdown, and actionable clinical recommendations*
-
-![Risk Analysis Dashboard](https://via.placeholder.com/1920x1080/0f172a/22c55e?text=Risk+Analysis+Dashboard)
+### 3. Anomaly Detection & Monitoring
+*The system automatically flags critical deviations (e.g., sudden SpO2 drops) in patient cohorts for immediate review.*
+<img width="100%" alt="Anomaly Detection Dashboard" src="https://github.com/user-attachments/assets/77c4993e-7f05-4c4d-b3e4-78171e008ae2" />
 
 ---
 
@@ -137,10 +140,12 @@ CORS_ORIGINS=https://respira-ai.vercel.app
 - Python 3.11+
 - Git
 
+## 🚀 Installation & Setup
+
 ### 1. Clone the Repository
 ```bash
-git clone https://github.com/CodeCarnivores/respira-ai.git
-cd respira-ai
+git clone https://github.com/Rohit7606/Respira-AI.git
+cd Respira-AI
 ```
 
 ### 2. Start the Backend Server
@@ -212,48 +217,7 @@ This ensures that a 65-year-old patient with FEV1 = 2.5L is correctly assessed d
 
 ---
 
-## 🤝 Contributing
-
-We welcome contributions from the medical informatics and ML communities! Please see our [Contributing Guidelines](CONTRIBUTING.md) for:
-- Code style standards
-- ML model validation requirements
-- Clinical accuracy testing protocols
-- Pull request process
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-**Academic Use:** If you use Respira-AI in research, please cite:
-```
-CodeCarnivores Team. (2026). Respira-AI: A Hybrid Clinical Decision Support System 
-for Respiratory Diagnostics. https://github.com/CodeCarnivores/respira-ai
-```
-
----
-
-## 🙏 Acknowledgments
-
-- **Medical Advisors:** Clinical validation provided by pulmonology experts
-- **Reference Standards:** NHANES III, GLI-2012 spirometry equations
-- **Open Source Community:** Built with Next.js, FastAPI, XGBoost, and shadcn/ui
-
----
-
-## 📧 Contact
-
-**Team CodeCarnivores**  
-*High-End Software Product Studio*
-
-- **Project Lead:** [Your Name](mailto:lead@codecarnivores.dev)
-- **Technical Support:** [support@codecarnivores.dev](mailto:support@codecarnivores.dev)
-- **Website:** [https://codecarnivores.dev](https://codecarnivores.dev)
-
----
-
 <p align="center">
   <strong>Empowering Healthcare Through Intelligent Systems</strong><br>
-  Built with ❤️ by CodeCarnivores
+  Built with ❤️ by Rohit
 </p>
