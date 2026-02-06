@@ -69,7 +69,7 @@ export function EnvironmentalContextCard({ data, isLoading }: Props) {
     }
 
     return (
-        <Card className={cn("relative overflow-hidden", data.source === 'fallback' && "border-yellow-200 bg-yellow-50/50")}>
+        <Card variant="glass" className={cn("relative overflow-hidden backdrop-blur-xl bg-white/40 border-teal-200/50 shadow-md", data.source === 'fallback' && "border-yellow-200 bg-yellow-50/50")}>
             <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">

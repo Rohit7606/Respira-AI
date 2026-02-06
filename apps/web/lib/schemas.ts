@@ -30,11 +30,11 @@ export const patientIntakeSchema = z.object({
     shortness_of_breath: z.boolean().default(false),
     height: z.preprocess(
         (val) => (val === "" ? undefined : Number(val)),
-        z.number().min(50, "Height must be valid (cm)").max(300).optional()
+        z.number().min(50, "Height must be valid (cm)").max(250).optional()
     ),
     weight: z.preprocess(
         (val) => (val === "" ? undefined : Number(val)),
-        z.number().min(10, "Weight must be valid (kg)").max(500).optional()
+        z.number().min(10, "Weight must be valid (kg)").max(300).optional()
     ),
     medication_use: z.boolean().default(false),
 })
